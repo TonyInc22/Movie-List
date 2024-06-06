@@ -1,0 +1,103 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Sheet3"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Private Sub Worksheet_Change(ByVal Target As Range)
+
+    If Intersect(Target, Range("E:E,J:J,O:O")) Is Nothing Then Exit Sub
+    
+    Dim lo As ListObject
+    Dim TableCount As Variant
+    TableCount = Sheets("Movie Series").ListObjects.Count
+    
+    Dim MaxSeries As Single
+    Dim MinSeries As Single
+    MaxSeries = 0
+    MinSeries = 10
+    
+    Dim Val As Single
+    Dim BestMovie As Single
+    Dim WorstMovie As Single
+    BestMovie = 0
+    WorstMovie = 10
+    
+    Dim ToraCount As Single
+    Dim TonyCount As Single
+    ToraCount = 0
+    TonyCount = 0
+    
+    Dim MovieCount As Integer
+    MovieCount = 0
+    
+    Dim Total As Integer
+    Total = 0
+    
+    For i = 1 To TableCount
+    
+        Set lo = ActiveSheet.ListObjects(i)
+        
+        ' Find the Best and Worst Average
+        If WorksheetFunction.Average(lo.DataBodyRange.Columns(4)) >= MaxSeries Then
+        
+            MaxSeries = WorksheetFunction.Average(lo.DataBodyRange.Columns(4))
+            Sheets("Movie Stats").Range("E11").Value = Replace(lo.Name, "_", " ")
+        
+        End If
+        If WorksheetFunction.Average(lo.DataBodyRange.Columns(4)) <= MinSeries Then
+        
+            MinSeries = WorksheetFunction.Average(lo.DataBodyRange.Columns(4))
+            Sheets("Movie Stats").Range("N11").Value = Replace(lo.Name, "_", " ")
+        
+        End If
+                
+        For j = 1 To 10
+            If IsNumeric(lo.DataBodyRange.Cells(j, 4)) And Not IsEmpty(lo.DataBodyRange.Cells(j, 4)) Then
+            
+                Val = lo.DataBodyRange.Cells(j, 4)
+            
+                ' Find the Best and Worst Movie
+                If Val >= BestMovie Then
+            
+                    BestMovie = Val
+                    Sheets("Movie Stats").Range("G11").Value = lo.DataBodyRange.Cells(j, 2)
+                
+                End If
+                If Val <= WorstMovie Then
+                
+                    WorstMovie = Val
+                    Sheets("Movie Stats").Range("L11").Value = lo.DataBodyRange.Cells(j, 2)
+                
+                End If
+                
+                If lo.DataBodyRange.Cells(j, 3) = "Tony" Then
+                    TonyCount = TonyCount + Val
+                Else
+                    ToraCount = ToraCount + Val
+                End If
+                
+                MovieCount = MovieCount + 1
+                Total = Total + Val
+                
+            End If
+        Next j
+    
+    Next i
+    
+    Sheets("Movie Stats").Range("J10").Value = "Average - " & Round(Total / MovieCount, 1)
+    Sheets("Movie Stats").Range("J11").Value = "Movies Watched - " & MovieCount
+    
+    If TonyCount > ToraCount Then
+        Sheets("Movie Stats").Range("I11").Value = "Tony"
+        Sheets("Movie Stats").Range("K11").Value = "Victoria"
+    Else
+        Sheets("Movie Stats").Range("K11").Value = "Tony"
+        Sheets("Movie Stats").Range("I11").Value = "Victoria"
+    End If
+
+End Sub
+
